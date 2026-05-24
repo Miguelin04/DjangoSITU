@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="/home/miguel/Escritorio/Computación Nube/DjangoSITU"
+ROOT="/home/miguel/Escritorio/Computación Nube/Situ/DjangoSITU"
 PYTHON="$ROOT/env/bin/python"
 APP_DIR="$ROOT/src/ProyectoSITU"
 PORT="${PORT:-8000}"
