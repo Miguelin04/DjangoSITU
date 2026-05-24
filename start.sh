@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="/home/miguel/Escritorio/Computación Nube/Situ/DjangoSITU"
 PYTHON="$ROOT/env/bin/python"
-APP_DIR="$ROOT/src/ProyectoSITU"
+APP_DIR="$ROOT/src"
 PORT="${PORT:-8000}"
 
 is_port_in_use() {
