@@ -1,0 +1,424 @@
+{% extends "./base.html" %}
+{% block title %}
+    PASAJE
+{% endblock %}
+
+{% block body %}
+{% load static %}
+
+<section class="situ-hero text-center mb-4">
+    <p class="hero-kicker">Panel principal</p>
+    <h1 class="hero-title panel-title">Gestión de operaciones SITU</h1>
+    <p class="hero-subtitle panel-subtitle">Aquí puedes revisar pasajeros, tarjetas, buses y viajes con un estilo más limpio.</p>
+</section>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="row">
+            <div class="col-sm-6 col-lg-3 mb-3">
+                <div class="card situ-card stat-card">
+                    <div class="card-body">
+                        <p class="stat-label">Pasajeros</p>
+                        <p class="stat-value">{{ pasajeros|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3 mb-3">
+                <div class="card situ-card stat-card">
+                    <div class="card-body">
+                        <p class="stat-label">Tarjetas</p>
+                        <p class="stat-value">{{ tarjetas|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3 mb-3">
+                <div class="card situ-card stat-card">
+                    <div class="card-body">
+                        <p class="stat-label">Buses</p>
+                        <p class="stat-value">{{ buses|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3 mb-3">
+                <div class="card situ-card stat-card">
+                    <div class="card-body">
+                        <p class="stat-label">Viajes</p>
+                        <p class="stat-value">{{ viajes|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ul class="nav nav-pills mb-3" id="situ-tabs" role="tablist">
+    <li class="nav-item"><a class="nav-link active" id="tab-pasajeros" data-toggle="pill" href="#panel-pasajeros" role="tab">Pasajeros</a></li>
+    <li class="nav-item"><a class="nav-link" id="tab-tarjetas" data-toggle="pill" href="#panel-tarjetas" role="tab">Tarjetas</a></li>
+    <li class="nav-item"><a class="nav-link" id="tab-buses" data-toggle="pill" href="#panel-buses" role="tab">Buses</a></li>
+    <li class="nav-item"><a class="nav-link" id="tab-viajes" data-toggle="pill" href="#panel-viajes" role="tab">Viajes</a></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="panel-pasajeros" role="tabpanel">
+        <div class="card situ-card">
+            <div class="card-body">
+                <div class="section-header">
+                    <h4 class="mb-0">Listado de pasajeros</h4>
+                    <div class="d-flex align-items-center flex-wrap" style="gap: .5rem;">
+                        <span class="section-badge">CRUD web</span>
+                        <button type="button" class="btn btn-situ-primary btn-sm" data-toggle="modal" data-target="#nuevoPasajeroModal">Nuevo Pasajero</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover situ-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Cedula</th>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Email</th>
+                                <th>Imagen</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for e in pasajeros %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ e.cedula }}</td>
+                                <td>{{ e.nombre }}</td>
+                                <td>{{ e.apellido }}</td>
+                                <td>{{ e.email }}</td>
+                                <td>
+                                    {% if e.imagen %}
+                                        <img src="{{ e.imagen.url }}" alt="Imagen pasajero" class="table-thumb">
+                                    {% else %}
+                                        <img src="{% static 'logo.png' %}" alt="Logo" class="table-thumb">
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center action-group">
+                                        <a href="{% url 'pasajerosEdit' e.id %}" class="btn btn-sm btn-situ-primary">Editar</a>
+                                        <form action="{% url 'pasajeros_delete' e.id %}" method="post" onsubmit="return confirm('Eliminar pasajero?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="7" class="text-center">No hay pasajeros registrados.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-card-footer">
+                    <span>Mostrando {{ pasajeros|length }} pasajeros registrados</span>
+                    <div class="table-pagination-placeholder">
+                        <button class="btn btn-sm btn-light border" disabled>&lt; Anterior</button>
+                        <button class="btn btn-sm btn-light border" disabled>Siguiente &gt;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="panel-tarjetas" role="tabpanel">
+        <section class="dashboard-block mb-3">
+            <div class="row">
+                <div class="col-lg-4 col-sm-6 mb-3">
+                    <div class="card situ-card stat-card">
+                        <div class="card-body">
+                            <p class="stat-label">Tarjetas activas</p>
+                            <p class="stat-value">{{ tarjetas_activas }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 mb-3">
+                    <div class="card situ-card stat-card">
+                        <div class="card-body">
+                            <p class="stat-label">Pasajeros con tarjeta</p>
+                            <p class="stat-value">{{ pasajeros_con_tarjeta }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-12 mb-3">
+                    <div class="card situ-card stat-card">
+                        <div class="card-body">
+                            <p class="stat-label">Monto total</p>
+                            <p class="stat-value">${{ tarjetas_total_monto|floatformat:2 }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="card situ-card">
+            <div class="card-body">
+                <div class="section-header">
+                    <h4 class="mb-0">Listado de tarjetas</h4>
+                    <span class="section-badge">Dashboard de tarjetas</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover situ-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Codigo</th>
+                                <th>Monto</th>
+                                <th>Numero pasajero</th>
+                                <th>Nombre pasajero</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in tarjetas %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ t.codigo }}</td>
+                                <td>{{ t.monto }}</td>
+                                <td>{{ t.idPasajero.cedula }}</td>
+                                <td>{{ t.idPasajero.nombre }} {{ t.idPasajero.apellido }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center action-group">
+                                        <a href="{% url 'tarjetas_edit' t.id %}" class="btn btn-sm btn-situ-primary">Editar</a>
+                                        <form action="{% url 'tarjetas_delete' t.id %}" method="post" onsubmit="return confirm('Eliminar tarjeta?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center">No hay tarjetas registradas.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-card-footer">
+                    <span>Tarjetas registradas: {{ tarjetas|length }}</span>
+                    <div class="table-pagination-placeholder">
+                        <button class="btn btn-sm btn-light border" disabled>&lt; Anterior</button>
+                        <button class="btn btn-sm btn-light border" disabled>Siguiente &gt;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="panel-buses" role="tabpanel">
+        <section class="dashboard-block mb-3">
+            <div class="row">
+                <div class="col-lg-4 col-sm-6 mb-3">
+                    <div class="card situ-card stat-card">
+                        <div class="card-body">
+                            <p class="stat-label">Buses totales</p>
+                            <p class="stat-value">{{ buses_totales }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6 mb-3">
+                    <div class="card situ-card stat-card">
+                        <div class="card-body">
+                            <p class="stat-label">Buses activos hoy</p>
+                            <p class="stat-value">{{ buses_activos_hoy }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-12 mb-3">
+                    <div class="card situ-card stat-card">
+                        <div class="card-body">
+                            <p class="stat-label">Cooperativas</p>
+                            <p class="stat-value">{{ buses_cooperativas }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="card situ-card">
+            <div class="card-body">
+                <div class="section-header">
+                    <h4 class="mb-0">Listado de buses</h4>
+                    <span class="section-badge">Dashboard de buses</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover situ-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Placa</th>
+                                <th>Cooperativa</th>
+                                <th>Numero</th>
+                                <th>Pasajeros asociados</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in buses %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ b.placa }}</td>
+                                <td>{{ b.cooperativa }}</td>
+                                <td>{{ b.numero }}</td>
+                                <td>
+                                    {% for p in b.idTarjeta.all %}
+                                        {{ p.nombre }}{% if not forloop.last %}, {% endif %}
+                                    {% empty %}
+                                        -
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center action-group">
+                                        <a href="{% url 'buses_edit' b.id %}" class="btn btn-sm btn-situ-primary">Editar</a>
+                                        <form action="{% url 'buses_delete' b.id %}" method="post" onsubmit="return confirm('Eliminar bus?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center">No hay buses registrados.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-card-footer">
+                    <span>Flota total: {{ buses|length }} buses</span>
+                    <div class="table-pagination-placeholder">
+                        <button class="btn btn-sm btn-light border" disabled>&lt; Anterior</button>
+                        <button class="btn btn-sm btn-light border" disabled>Siguiente &gt;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="panel-viajes" role="tabpanel">
+        <section class="dashboard-block mb-3">
+            <div class="row mb-3">
+                <div class="col-lg-3 col-sm-6 mb-3">
+                    <div class="card trip-metric-card">
+                        <div class="card-body">
+                            <p class="trip-metric-label">Recaudacion hoy</p>
+                            <p class="trip-metric-value">${{ recaudacion_hoy|floatformat:2 }}</p>
+                            <p class="trip-metric-sub">+12.5% vs ayer</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6 mb-3">
+                    <div class="card trip-metric-card">
+                        <div class="card-body">
+                            <p class="trip-metric-label">Viajes hoy</p>
+                            <p class="trip-metric-value">{{ viajes_hoy }}</p>
+                            <p class="trip-metric-sub">+4.2% vs ayer</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6 mb-3">
+                    <div class="card trip-metric-card">
+                        <div class="card-body">
+                            <p class="trip-metric-label">Buses activos</p>
+                            <p class="trip-metric-value">{{ buses_activos_hoy }} / {{ buses_totales }}</p>
+                            <p class="trip-metric-sub">Flota de hoy</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6 mb-3">
+                    <div class="card trip-metric-card">
+                        <div class="card-body">
+                            <p class="trip-metric-label">Tarjetas activas</p>
+                            <p class="trip-metric-value">{{ tarjetas_activas }}</p>
+                            <p class="trip-metric-sub">+{{ pagos_tarjeta_hoy }} nuevas hoy</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="trip-dashboard">
+            <div class="card trip-table-card">
+                <div class="card-body p-0">
+                    <div class="trip-toolbar">
+                        <input type="text" class="trip-input" placeholder="Buscar por Cédula, Placa o Tarjeta..." readonly>
+                        <div class="trip-control">Fecha: Hoy</div>
+                        <div class="trip-control">Tipo: Todos</div>
+                        <span class="trip-chip trip-chip-fare">Tarifa Estándar: $0.30</span>
+                        <a href="{% url 'viajes_create' %}" class="btn trip-new-btn">+ Nuevo Viaje</a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover situ-table trip-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID Viaje</th>
+                                    <th>Pasajero (Cedula)</th>
+                                    <th>Bus (Placa)</th>
+                                    <th>Cooperativa</th>
+                                    <th>Fecha/Hora</th>
+                                    <th>Tipo pago</th>
+                                    <th>Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for v in viajes %}
+                                <tr>
+                                    <td>#{{ v.id }}</td>
+                                    <td>{{ v.pasajero.nombre }} {{ v.pasajero.apellido }} ({{ v.pasajero.cedula }})</td>
+                                    <td>{{ v.bus.placa }}</td>
+                                    <td>{{ v.bus.cooperativa }}</td>
+                                    <td>{{ v.fecha_viaje|date:"H:i:s" }}</td>
+                                    <td>
+                                        {% if v.efectivo %}
+                                            <span class="payment-badge badge-cash">EFECTIVO</span>
+                                        {% else %}
+                                            <span class="payment-badge badge-card">TARJETA</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>${{ v.costo|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="7" class="text-center py-4">No hay viajes registrados.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="trip-footer">
+                        <span>Mostrando 1 a {{ viajes|length }} de {{ viajes|length }} viajes registrados hoy</span>
+                        <div class="trip-pagination-mock">
+                            <button class="btn btn-sm btn-light border" disabled>&lt; Anterior</button>
+                            <button class="btn btn-sm btn-light border" disabled>Siguiente &gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade situ-modal" id="nuevoPasajeroModal" tabindex="-1" role="dialog" aria-labelledby="nuevoPasajeroModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <p class="hero-kicker mb-1">Nuevo pasajero</p>
+                    <h5 class="modal-title mb-0" id="nuevoPasajeroModalLabel">Registrar pasajero</h5>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <form action="{% url 'pasajero_create' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="button" class="btn btn-light border mr-2" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-situ-primary">Guardar pasajero</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock body %}

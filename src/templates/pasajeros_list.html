@@ -1,0 +1,127 @@
+{% extends "./base.html" %}
+{% block title %}
+    Pasajeros
+{% endblock %}
+
+{% block body %}
+{% load static %}
+
+<section class="situ-hero text-center mb-4">
+    <p class="hero-kicker">Gestión de pasajeros</p>
+    <h1 class="hero-title">Listado de Pasajeros</h1>
+    <p class="hero-subtitle">Administra todos los pasajeros del sistema SITU.</p>
+</section>
+
+<div class="card situ-card mb-4">
+    <div class="card-body">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h4 class="mb-0">Pasajeros registrados</h4>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#nuevoPasajeroModal">+ Nuevo Pasajero</button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover situ-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Cedula</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Email</th>
+                        <th>Imagen</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in pasajeros %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ e.cedula }}</td>
+                        <td>{{ e.nombre }}</td>
+                        <td>{{ e.apellido }}</td>
+                        <td>{{ e.email }}</td>
+                        <td>
+                            {% if e.imagen %}
+                                <img src="{{ e.imagen.url }}" alt="Imagen pasajero" class="table-thumb clickable-img" data-toggle="modal" data-target="#imagePreviewModal" data-img-url="{{ e.imagen.url }}">
+                            {% else %}
+                                <img src="{% static 'logo.png' %}" alt="Logo" class="table-thumb">
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center action-group">
+                                <a href="{% url 'pasajerosEdit' e.id %}" class="btn btn-sm btn-situ-primary">Editar</a>
+                                <form action="{% url 'pasajeros_delete' e.id %}" method="post" onsubmit="return confirm('Eliminar pasajero?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center">No hay pasajeros registrados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="table-card-footer">
+            <span>Mostrando {{ pasajeros|length }} pasajeros registrados</span>
+            <div class="table-pagination-placeholder">
+                <button class="btn btn-sm btn-light border" disabled>&lt; Anterior</button>
+                <button class="btn btn-sm btn-light border" disabled>Siguiente &gt;</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para nuevo pasajero -->
+<div class="modal fade situ-modal" id="nuevoPasajeroModal" tabindex="-1" role="dialog" aria-labelledby="nuevoPasajeroModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <p class="hero-kicker mb-1">Nuevo pasajero</p>
+                    <h5 class="modal-title mb-0" id="nuevoPasajeroModalLabel">Registrar pasajero</h5>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <form action="{% url 'pasajero_create' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="button" class="btn btn-primary mr-2" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-warning">Guardar pasajero</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock body %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('.clickable-img').on('click', function() {
+            var imgUrl = $(this).data('img-url');
+            $('#previewImg').attr('src', imgUrl);
+        });
+    });
+</script>
+{% endblock %}
+
+<!-- Modal de Previsualización de Imagen -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="position: absolute; top: -30px; right: 0; color: white; opacity: 1;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <img src="" id="previewImg" alt="Ampliación">
+            </div>
+        </div>
+    </div>
+</div>

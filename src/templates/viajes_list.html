@@ -1,0 +1,122 @@
+{% extends "./base.html" %}
+{% block title %}
+    Viajes
+{% endblock %}
+
+{% block body %}
+{% load static %}
+
+<section class="situ-hero text-center mb-4">
+    <p class="hero-kicker">Gestión de viajes</p>
+    <h1 class="hero-title">Lista de viajes</h1>
+    <p class="hero-subtitle">Monitorea todos los viajes del sistema con tarifa estándar de $0.30.</p>
+</section>
+
+<!-- KPI Cards -->
+<section class="dashboard-block mb-4">
+    <div class="row mb-3">
+        <div class="col-lg-3 col-sm-6 mb-3">
+            <div class="card trip-metric-card">
+                <div class="card-body">
+                    <p class="trip-metric-label">Recaudacion hoy</p>
+                    <p class="trip-metric-value">${{ recaudacion_hoy|floatformat:2 }}</p>
+                    <p class="trip-metric-sub">+12.5% vs ayer</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6 mb-3">
+            <div class="card trip-metric-card">
+                <div class="card-body">
+                    <p class="trip-metric-label">Viajes hoy</p>
+                    <p class="trip-metric-value">{{ viajes_hoy }}</p>
+                    <p class="trip-metric-sub">+4.2% vs ayer</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6 mb-3">
+            <div class="card trip-metric-card">
+                <div class="card-body">
+                    <p class="trip-metric-label">Buses activos</p>
+                    <p class="trip-metric-value">{{ buses_activos_hoy }}</p>
+                    <p class="trip-metric-sub">Flota de hoy</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6 mb-3">
+            <div class="card trip-metric-card">
+                <div class="card-body">
+                    <p class="trip-metric-label">Tarjetas activas</p>
+                    <p class="trip-metric-value">{{ tarjetas_activas }}</p>
+                    <p class="trip-metric-sub">En el sistema</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Viajes Table -->
+<div class="card situ-card">
+    <div class="card-body">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h4 class="mb-0">Lista de viajes</h4>
+            <a href="{% url 'viajes_create' %}" class="btn btn-primary">+ Nuevo Viaje</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover situ-table mb-0">
+                <thead>
+                    <tr>
+                        <th>ID Viaje</th>
+                        <th>Pasajero (Cedula)</th>
+                        <th>Bus (Placa)</th>
+                        <th>Cooperativa</th>
+                        <th>Fecha/Hora</th>
+                        <th>Tipo pago</th>
+                        <th>Monto</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in viajes %}
+                    <tr>
+                        <td>#{{ v.id }}</td>
+                        <td>{{ v.pasajero.nombre }} {{ v.pasajero.apellido }} ({{ v.pasajero.cedula }})</td>
+                        <td>{{ v.bus.placa }}</td>
+                        <td>{{ v.bus.cooperativa }}</td>
+                        <td>{{ v.fecha_viaje|date:"H:i:s" }}</td>
+                        <td>
+                            {% if v.efectivo %}
+                                <span class="payment-badge badge-cash">EFECTIVO</span>
+                            {% else %}
+                                <span class="payment-badge badge-card">TARJETA</span>
+                            {% endif %}
+                        </td>
+                        <td>${{ v.costo|floatformat:2 }}</td>
+                        <td>
+                            <div class="d-flex align-items-center action-group">
+                                <a href="{% url 'viajes_edit' v.id %}" class="btn btn-sm btn-situ-primary">Editar</a>
+                                <form action="{% url 'viajes_delete' v.id %}" method="post" onsubmit="return confirm('Eliminar viaje?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center py-4">No hay viajes registrados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-card-footer">
+            <span>Mostrando {{ viajes|length }} viajes registrados</span>
+            <div class="table-pagination-placeholder">
+                <button class="btn btn-sm btn-light border" disabled>&lt; Anterior</button>
+                <button class="btn btn-sm btn-light border" disabled>Siguiente &gt;</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock body %}

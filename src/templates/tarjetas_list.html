@@ -1,0 +1,98 @@
+{% extends "./base.html" %}
+{% block title %}
+    Tarjetas
+{% endblock %}
+
+{% block body %}
+{% load static %}
+
+<section class="situ-hero text-center mb-4">
+    <p class="hero-kicker">Gestión de tarjetas</p>
+    <h1 class="hero-title">Dashboard de Tarjetas</h1>
+    <p class="hero-subtitle">Aquí puedes ver el estado de todas las tarjetas del sistema.</p>
+</section>
+
+<!-- KPI Cards -->
+<section class="dashboard-block mb-4">
+    <div class="row">
+        <div class="col-lg-4 col-sm-6 mb-3">
+            <div class="card situ-card stat-card">
+                <div class="card-body">
+                    <p class="stat-label">Tarjetas activas</p>
+                    <p class="stat-value">{{ tarjetas_activas }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6 mb-3">
+            <div class="card situ-card stat-card">
+                <div class="card-body">
+                    <p class="stat-label">Pasajeros con tarjeta</p>
+                    <p class="stat-value">{{ pasajeros_con_tarjeta }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-12 mb-3">
+            <div class="card situ-card stat-card">
+                <div class="card-body">
+                    <p class="stat-label">Monto total</p>
+                    <p class="stat-value">${{ tarjetas_total_monto|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tarjetas Table -->
+<div class="card situ-card">
+    <div class="card-body">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h4 class="mb-0">Listado de tarjetas</h4>
+            <a href="{% url 'tarjetas_create' %}" class="btn btn-primary">+ Nueva Tarjeta</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover situ-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Codigo</th>
+                        <th>Monto</th>
+                        <th>Numero pasajero</th>
+                        <th>Nombre pasajero</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in tarjetas %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ t.codigo }}</td>
+                        <td>${{ t.monto|floatformat:2 }}</td>
+                        <td>{{ t.idPasajero.cedula }}</td>
+                        <td>{{ t.idPasajero.nombre }} {{ t.idPasajero.apellido }}</td>
+                        <td>
+                            <div class="d-flex align-items-center action-group">
+                                <a href="{% url 'tarjetas_edit' t.id %}" class="btn btn-sm btn-situ-primary">Editar</a>
+                                <form action="{% url 'tarjetas_delete' t.id %}" method="post" onsubmit="return confirm('Eliminar tarjeta?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center">No hay tarjetas registradas.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="table-card-footer">
+            <span>Tarjetas registradas: {{ tarjetas|length }}</span>
+            <div class="table-pagination-placeholder">
+                <button class="btn btn-sm btn-light border" disabled>&lt; Anterior</button>
+                <button class="btn btn-sm btn-light border" disabled>Siguiente &gt;</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock body %}

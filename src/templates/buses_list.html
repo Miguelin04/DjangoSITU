@@ -1,0 +1,104 @@
+{% extends "./base.html" %}
+{% block title %}
+    Buses
+{% endblock %}
+
+{% block body %}
+{% load static %}
+
+<section class="situ-hero text-center mb-4">
+    <p class="hero-kicker">Gestión de buses</p>
+    <h1 class="hero-title">Dashboard de Buses</h1>
+    <p class="hero-subtitle">Controla tu flota de buses y cooperativas.</p>
+</section>
+
+<!-- KPI Cards -->
+<section class="dashboard-block mb-4">
+    <div class="row">
+        <div class="col-lg-4 col-sm-6 mb-3">
+            <div class="card situ-card stat-card">
+                <div class="card-body">
+                    <p class="stat-label">Buses totales</p>
+                    <p class="stat-value">{{ buses_totales }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6 mb-3">
+            <div class="card situ-card stat-card">
+                <div class="card-body">
+                    <p class="stat-label">Buses activos hoy</p>
+                    <p class="stat-value">{{ buses_activos_hoy }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-12 mb-3">
+            <div class="card situ-card stat-card">
+                <div class="card-body">
+                    <p class="stat-label">Cooperativas</p>
+                    <p class="stat-value">{{ buses_cooperativas }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Buses Table -->
+<div class="card situ-card">
+    <div class="card-body">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h4 class="mb-0">Listado de buses</h4>
+            <a href="{% url 'buses_create' %}" class="btn btn-primary">+ Nuevo Bus</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover situ-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Placa</th>
+                        <th>Cooperativa</th>
+                        <th>Numero</th>
+                        <th>Pasajeros asociados</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in buses %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ b.placa }}</td>
+                        <td>{{ b.cooperativa }}</td>
+                        <td>{{ b.numero }}</td>
+                        <td>
+                            {% for p in b.idTarjeta.all %}
+                                {{ p.nombre }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                -
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center action-group">
+                                <a href="{% url 'buses_edit' b.id %}" class="btn btn-sm btn-situ-primary">Editar</a>
+                                <form action="{% url 'buses_delete' b.id %}" method="post" onsubmit="return confirm('Eliminar bus?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center">No hay buses registrados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="table-card-footer">
+            <span>Flota total: {{ buses|length }} buses</span>
+            <div class="table-pagination-placeholder">
+                <button class="btn btn-sm btn-light border" disabled>&lt; Anterior</button>
+                <button class="btn btn-sm btn-light border" disabled>Siguiente &gt;</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock body %}
