@@ -1,1 +1,41 @@
+name: Build and deploy Python app to Azure Web App - djangositu-Miguel
 
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m venv antenv
+          source antenv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_15B51E0094724A0098BBDB490CEEDB08 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3EFFF697A10C4822A5D37654CF14EF3D }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E22F865441484431B9C0544A24844D31 }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'djangositu-Miguel'
+          slot-name: 'Production'
+          package: .
