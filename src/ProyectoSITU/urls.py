@@ -3,14 +3,14 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import RedirectView  # <-- Importamos la redirección nativa
+from django.views.generic import RedirectView  # <-- Importación nativa para la redirección
 from appSITUweb.views import *
 
 urlpatterns = [
-    # CORREGIDO: Redirección directa nativa de Django para saltarse la home_view conflictiva
+    # CORREGIDO: Redirección limpia hacia la lista de pasajeros
     path('', RedirectView.as_view(url='/pasajeros/', permanent=False), name='home'),
     
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),  # Asegurado admin.site.urls estándar
     path('pasajeros/', pasajeros, name='pasajeros'),
     path('pasajeros/create/', pasajeroCreate, name='pasajero_create'),
     path('pasajerosEdit/<id>', pasajerosEdit, name='pasajerosEdit'),
@@ -39,6 +39,6 @@ urlpatterns = [
     path('api/viajes/<int:id>/', api_viaje_detalle, name='api_viaje_detalle'),
 ]
 
-# Servir archivos de media en desarrollo o producción local
+# Servir archivos de media de manera dinámica
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
