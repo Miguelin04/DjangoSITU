@@ -57,6 +57,13 @@ ROOT_URLCONF = 'ProyectoSITU.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+        # CORREGIDO: Se usa el operador / para unir la ruta Path correctamente con la carpeta
+>>>>>>> origin/main
+>>>>>>> origin/main
         'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
