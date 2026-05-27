@@ -10,11 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
+import os  # IMPORTANTE: Cargamos el módulo para leer variables del sistema
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-print('RUTA de mi proy',BASE_DIR)
+print('RUTA de mi proy', BASE_DIR)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -56,7 +57,7 @@ ROOT_URLCONF = 'ProyectoSITU.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR,"templates"],
+        'DIRS': [BASE_DIR, "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -75,12 +76,27 @@ WSGI_APPLICATION = 'ProyectoSITU.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+# CONFIGURACIÓN DINÁMICA DE ENTORNO (PRODUCCIÓN / DESARROLLO)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # Si Azure inyecta DB_ENGINE usa PostgreSQL, de lo contrario usa SQLite local
+        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': os.environ.get('DB_NAME', BASE_DIR / 'db.sqlite3'),
+        'USER': os.environ.get('DB_USER', ''),
+        
+        # AQUÍ SE COLOCA LA CONTRASEÑA EN TU ENTORNO (Se lee desde las variables de Azure)
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'Kenichi@2014'),
+        
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
+
+# Azure exige conexiones cifradas SSL obligatorias para Servidores Flexibles de PostgreSQL
+if 'postgresql' in DATABASES['default']['ENGINE']:
+    DATABASES['default']['OPTIONS'] = {
+        'sslmode': 'require',
+    }
 
 
 # Password validation
