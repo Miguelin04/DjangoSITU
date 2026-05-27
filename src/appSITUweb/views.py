@@ -14,9 +14,8 @@ from .models import Bus, Pasajero, Tarjeta, Viaje
 # ==========================================
 #          VISTAS TRADICIONALES (HTML)
 # ==========================================
-
 def home_view(request):
-    return render(request, "base.html",{})
+    return redirect('pasajeros')
 
 
 def pasajeros(request):
