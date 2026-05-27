@@ -6,17 +6,22 @@ from django.db.models import DecimalField, ExpressionWrapper, F, Sum
 from django.http import HttpResponseNotAllowed, JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
+from django.shortcuts import render, redirect, get_object_or_404
+
 from .forms import BusFormulario, PasajeroFormulario, TarjetaFormulario, ViajeFormulario
 from .models import Bus, Pasajero, Tarjeta, Viaje
-from django.shortcuts import render,redirect,get_object_or_404
 
-# Create your views here.
+# ==========================================
+#          VISTAS TRADICIONALES (HTML)
+# ==========================================
 
 def home_view(request):
-    return render(request,"index.html",{})
+    return render(request, "index.html", {})
+
 
 def pasajeros(request):
     data = PasajeroFormulario()
+    # Optimizamos con prefetch_related usando el set por defecto de Django o el related_name correspondiente
     pasajeros_list = Pasajero.objects.prefetch_related("tarjeta_set").all().order_by("id")
     total_pasajeros = pasajeros_list.count()
 
@@ -105,10 +110,11 @@ def pasajeroCreate(request):
             formulario.save()
     return redirect(to="pasajeros")
 
+
 def pasajerosEdit(request, id):
-    pasajeros = get_object_or_404(Pasajero, id = id)
+    pasajeros = get_object_or_404(Pasajero, id=id)
     data = {
-        'form' : PasajeroFormulario(instance=pasajeros)
+        'form': PasajeroFormulario(instance=pasajeros)
     }
     if request.method == 'POST':
         formulario = PasajeroFormulario(data=request.POST, instance=pasajeros, files=request.FILES)
@@ -116,7 +122,7 @@ def pasajerosEdit(request, id):
             formulario.save()
             return redirect(to="pasajeros")
 
-    return render(request,'pasajerosEdit.html',data)
+    return render(request, 'pasajerosEdit.html', data)
 
 
 @require_POST
@@ -276,6 +282,10 @@ def viajesDelete(request, id):
     return redirect(to="viajes_list")
 
 
+# ==========================================
+#          FUNCIONES AUXILIARES API
+# ==========================================
+
 def _pasajero_to_dict(pasajero):
     return {
         "id": pasajero.id,
@@ -301,6 +311,43 @@ def _validation_error_response(exc):
         return JsonResponse({"error": exc.message_dict}, status=400)
     return JsonResponse({"error": exc.messages}, status=400)
 
+
+def _tarjeta_to_dict(tarjeta):
+    return {
+        "id": tarjeta.id,
+        "codigo": tarjeta.codigo,
+        "monto": tarjeta.monto,
+        "id_pasajero": tarjeta.idPasajero_id,
+    }
+
+
+def _bus_to_dict(bus):
+    return {
+        "id": bus.id,
+        "placa": bus.placa,
+        "cooperativa": bus.cooperativa,
+        "numero": str(bus.numero),
+        # CORREGIDO: Mapeo explícito usando el nombre correcto de la relación inversa idTarjeta
+        "id_tarjeta": list(bus.idTarjeta.values_list("id", flat=True)),
+    }
+
+
+def _viaje_to_dict(viaje):
+    return {
+        "id": viaje.id,
+        "pasajero_id": viaje.pasajero_id,
+        "bus_id": viaje.bus_id,
+        "costo": str(viaje.costo),
+        "cantidad": viaje.cantidad,
+        "fecha_viaje": viaje.fecha_viaje.isoformat() if viaje.fecha_viaje else None,
+        "efectivo": viaje.efectivo,
+        "tipo": viaje.tipo,
+    }
+
+
+# ==========================================
+#             ENDPOINTS DE LA API
+# ==========================================
 
 def api_pasajeros(request):
     if request.method == "GET":
@@ -368,38 +415,6 @@ def api_pasajero_detalle(request, id):
         return JsonResponse({"ok": True, "message": "Pasajero eliminado."})
 
     return HttpResponseNotAllowed(["GET", "PUT", "PATCH", "DELETE"])
-
-
-def _tarjeta_to_dict(tarjeta):
-    return {
-        "id": tarjeta.id,
-        "codigo": tarjeta.codigo,
-        "monto": tarjeta.monto,
-        "id_pasajero": tarjeta.idPasajero_id,
-    }
-
-
-def _bus_to_dict(bus):
-    return {
-        "id": bus.id,
-        "placa": bus.placa,
-        "cooperativa": bus.cooperativa,
-        "numero": str(bus.numero),
-        "pasajeros": list(bus.idTarjeta.values_list("id", flat=True)),
-    }
-
-
-def _viaje_to_dict(viaje):
-    return {
-        "id": viaje.id,
-        "pasajero_id": viaje.pasajero_id,
-        "bus_id": viaje.bus_id,
-        "costo": str(viaje.costo),
-        "cantidad": viaje.cantidad,
-        "fecha_viaje": viaje.fecha_viaje.isoformat() if viaje.fecha_viaje else None,
-        "efectivo": viaje.efectivo,
-        "tipo": viaje.tipo,
-    }
 
 
 def api_tarjetas(request):
@@ -528,10 +543,12 @@ def api_viajes(request):
 
         pasajero = get_object_or_404(Pasajero, id=body.get("pasajero_id"))
         bus = get_object_or_404(Bus, id=body.get("bus_id"))
+        
+        # CORREGIDO: Mapeamos el costo usando una instancia de Decimal válida
         viaje = Viaje(
             pasajero=pasajero,
             bus=bus,
-            costo="0.30",
+            costo=Decimal("0.30"),
             cantidad=body.get("cantidad", 0),
             efectivo=body.get("efectivo", True),
             tipo=body.get("tipo", ""),
@@ -563,7 +580,8 @@ def api_viaje_detalle(request, id):
         if "bus_id" in body:
             viaje.bus = get_object_or_404(Bus, id=body.get("bus_id"))
 
-        viaje.costo = "0.30"
+        # CORREGIDO: Consistencia del valor Decimal para el costo
+        viaje.costo = Decimal("0.30")
         viaje.cantidad = body.get("cantidad", viaje.cantidad)
         viaje.efectivo = body.get("efectivo", viaje.efectivo)
         viaje.tipo = body.get("tipo", viaje.tipo)
