@@ -16,7 +16,7 @@ from .models import Bus, Pasajero, Tarjeta, Viaje
 # ==========================================
 
 def home_view(request):
-    return render(request, "index.html", {})
+    return render(request, "base.html", {})
 
 
 def pasajeros(request):
