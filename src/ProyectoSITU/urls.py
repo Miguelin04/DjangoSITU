@@ -1,27 +1,15 @@
-"""ProyectoSITU URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
+"""ProyectoSITU URL Configuration"""
 from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import RedirectView  # <-- Importamos la redirección nativa
 from appSITUweb.views import *
 
-
 urlpatterns = [
-    path('', home_view, name='home'),
+    # CORREGIDO: Redirección directa nativa de Django para saltarse la home_view conflictiva
+    path('', RedirectView.as_view(url='/pasajeros/', permanent=False), name='home'),
+    
     path('admin/', admin.site.urls),
     path('pasajeros/', pasajeros, name='pasajeros'),
     path('pasajeros/create/', pasajeroCreate, name='pasajero_create'),
@@ -39,6 +27,8 @@ urlpatterns = [
     path('viajes/create/', viajesCreate, name='viajes_create'),
     path('viajes/edit/<int:id>/', viajesEdit, name='viajes_edit'),
     path('viajes/delete/<int:id>/', viajesDelete, name='viajes_delete'),
+    
+    # API endpoints
     path('api/pasajeros/', api_pasajeros, name='api_pasajeros'),
     path('api/pasajeros/<int:id>/', api_pasajero_detalle, name='api_pasajero_detalle'),
     path('api/tarjetas/', api_tarjetas, name='api_tarjetas'),
@@ -49,6 +39,6 @@ urlpatterns = [
     path('api/viajes/<int:id>/', api_viaje_detalle, name='api_viaje_detalle'),
 ]
 
-# Servir archivos de media en desarrollo
+# Servir archivos de media en desarrollo o producción local
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
